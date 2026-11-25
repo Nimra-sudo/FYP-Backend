@@ -1,6 +1,6 @@
-
 const express = require("express");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../model/User");
 
 const router = express.Router();
@@ -60,10 +60,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({
@@ -71,8 +68,20 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is missing");
+      return res.status(500).json({ message: "Server error." });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
     res.status(200).json({
       message: "Login successful!",
+      token,
       user: {
         id: user._id,
         firstName: user.firstName,
@@ -81,7 +90,6 @@ router.post("/login", async (req, res) => {
         role: user.role
       }
     });
-
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({

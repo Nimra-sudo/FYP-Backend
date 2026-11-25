@@ -10,6 +10,7 @@ if (!process.env.VERCEL) {
 }
 
 const authRoutes = require("./Route/AuthRoute");
+const adminRoutes = require("./Route/AdminRoute");
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use(async (req, res, next) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.send("Face Liveness Backend is Running!");
